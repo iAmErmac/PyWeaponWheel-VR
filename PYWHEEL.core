@@ -1,0 +1,316 @@
+//==============================================================================
+//==============================================================================
+//==============================================================================
+//
+//						   PyWeaponWheel Lump (PYWHEEL)
+//
+//------------------------------------------------------------------------------
+// Lump rules:
+
+// * Only '//' comments are supported at this time
+// * The parsing is currently lenient in places it shouldn't be. I improved upon
+//   it in the MetaDoom codex, but have yet to port over the changes.
+
+//------------------------------------------------------------------------------
+//==============================================================================
+//------------------------------------------------------------------------------
+// Block Identifiers:
+
+// * <actor name> [, <actor name>...] {} - If the player is or inherits from this
+//   actor, the wheel will begin looking into this block.
+
+//------------------------------------------------------------------------------
+//==============================================================================
+//------------------------------------------------------------------------------
+// Innerblock Identifiers:
+
+// * validate <weapon actor>; - If the player doesn't have this item, ignore
+//   all identifiers after it.
+
+// * exclude <weapon actor>; - Excludes a weapon from the wheel.
+
+// * include <weapon actor>; - Includes a weapon into the wheel. Forces the
+//   wheel into Inclusion mode, which ignores excludes.
+
+// * merge <weapon actor>, <weapon actor>; - If the second weapon is present,
+//   only display the second weapon. Otherwise, display the first one. Used for
+//   QC: Doom Edition's Super weapon variants and Juvenile Power Fantasy's
+//   alternate slot weapons.
+
+// * forceicon <weapon actor>, <new graphic>; - Forces the weapon's icon on the
+//   wheel to a new graphic. Used in Hunter's Moon and LegenDoom.
+
+// * rename <weapon actor>, <new name>; - Changes the name of the weapon on the
+//   weapon wheel to the new name. Used for weapons that lack proper tags.
+
+//------------------------------------------------------------------------------
+//==============================================================================
+//==============================================================================
+//==============================================================================
+
+//===================================================
+// MODS
+//===================================================
+
+// Doom Delta
+
+//pending
+
+// MetaDoom
+
+MetaDoomPlayer
+{
+	exclude "MetaCheatDetector";
+	hide "MetaLastResortFist";
+	hide "MetaBerserkFist";
+}
+
+// Juvenile Power Fantasy
+
+JPF_Player
+{
+	merge "JPF_Spas12", "JPF_DoubleBarrel";
+}
+
+// High Noon Drifter
+
+WesternPlayer
+{
+	exclude "Whip";
+	forceicon "Artifact", "BSKLA0";
+}
+
+// LegenDoom
+
+LDPlayer
+{
+	exclude "LDWeapon";
+	forceicon "LDFists", "SFISZ0";
+	forceicon "LDChainsaw", "SSAWZ0";
+	forceicon "LDPistol", "SPISZ0";
+	forceicon "LDShotgun", "SSHTZ0";
+	forceicon "LDSuperShotgun", "SSSGZ0";
+	forceicon "LDChaingun", "SCHGZ0";
+	forceicon "LDChaingun", "SCHGZ0";
+	forceicon "LDPlasmaRifle", "SPLSZ0";
+	forceicon "LDRocketLauncher", "SRLAZ0";
+	forceicon "LDBFG9000", "SBFGZ0";
+}
+
+// Golden Souls 2
+
+GSPlayer
+{
+	merge "Handgun", "GoldHandgun";
+	merge "HuntingShotgun", "GoldHuntingShotgun";
+	merge "LeverShotgun", "GoldLeverShotgun";
+	merge "AssaultRifle", "GoldAssaultRifle";
+	merge "Trumpetbuss", "GoldTrumpetbuss";
+	merge "StarShooter", "GoldStarShooter";
+	merge "Cupid", "GoldCupid";
+	rename "GoldHandgun", "$PWW_GoldHG";
+	rename "GoldHuntingShotgun", "$PWW_GoldHS";
+	rename "GoldLeverShotgun", "$PWW_GoldCS";
+	rename "GoldAssaultRifle", "$PWW_GoldAW";
+	rename "GoldTrumpetbuss", "$PWW_GoldTB";
+	rename "GoldStarShooter", "$PWW_GoldAW";
+	rename "GoldCupid", "$PWW_GoldCP";
+}
+
+// QC: Doom Edition
+
+QCPlayer
+{
+	exclude "QCMachinegunDM";
+	exclude "QCHeavyMachinegunDM";
+	exclude "QCShotgunDM";
+	exclude "QCSuperShotgunDM";
+	exclude "QCNailgunDM";
+	exclude "QCSuperNailgunDM";
+	exclude "QCRocketLauncherDM";
+	exclude "QCLightningGunDM";
+	exclude "QCRailGunDM";
+	exclude "QCTriBoltDM";
+	exclude "QCBFGDM";
+	merge "QCMachinegun", "QCHeavyMachinegun";
+	merge "QCNailgun", "QCSuperNailgun";
+}
+
+// Death Foretold
+
+Doom4Player
+{
+	exclude "D4DFistDM";
+	exclude "D4ChainsawDM";
+	exclude "D4PistolDM";
+	exclude "D4BotPistolDM";
+	exclude "D4HellShotDM";
+	exclude "D4ShotgunDM";
+	exclude "D4ReaperDM";
+	exclude "D4SuperShotgunDM";
+	exclude "D4HARDM";
+	exclude "D4RepeaterDM";
+	exclude "D4ChaingunDM";
+	exclude "D4GrenadeLauncherDM";
+	exclude "D4RocketLauncherDM";
+	exclude "D4PlasmaRifleDM";
+	exclude "D4LightningGunDM";
+	exclude "D4StaticRifleDM";
+	exclude "D4VortexRifleDM";
+	exclude "D4BFGDM";
+	exclude "D4MobileTurretDM";
+	exclude "D4GaussCannonDM";
+}
+
+// Lambda
+
+GordoSucio
+{
+	exclude "Fist";
+}
+
+// Hunter's Moon
+
+HMBasePawn
+{
+	forceicon "Q3Gauntlet", "GTICON", 0.4;
+	forceicon "Q3Machinegun", "MGICON", 0.4;
+	forceicon "QLHeavyMachinegun", "HMGICON", 0.4;
+	forceicon "Q3Shotgun", "SGICON", 0.4;
+	forceicon "Q3GrenadeLauncher", "GLICON", 0.4;
+	forceicon "Q3RocketLauncher", "RLICON", 0.4;
+	forceicon "Q3LightningGun", "LGICON", 0.4;
+	forceicon "Q3Railgun", "RGICON", 0.4;
+	forceicon "Q3Plasmagun", "PGICON", 0.4;
+	forceicon "TrakionCannon", "TRKICON", 0.4;
+	forceicon "Q3BFG10k", "BFGICON", 0.4;
+	forceicon "Q3Chaingun", "CGICON", 0.4;
+	forceicon "Q3Nailgun", "NGICON", 0.4;
+	forceicon "DarkMatterGun", "DMGICON", 0.4;
+	forceicon "CynetikStrikerCannon", "CSGICON", 0.4;
+}
+
+// Samsara (jesus fuck)
+
+DoomguyPlayer
+{
+	validate "IsSamsaraClass";
+	include " Chainsaw ";
+	rename " Chainsaw ", "Chainsaw";
+	include " Fist ";
+	rename " Fist ", "Fist";
+	include " Pistol ";
+	rename " Pistol ", "Pistol";
+	include " Shotgun ";
+	rename " Shotgun ", "Shotgun";
+	include "Super Shotgun";
+	include " Chaingun ";
+	rename " Chaingun ", "Chaingun";
+	include "Rocket Launcher";
+	include "Plasma Rifle";
+	include "BFG 9000";
+}
+
+ChexWarrior
+{
+	validate "IsSamsaraClass";
+	include " Bootspoon ";
+	rename " Bootspoon ", "Bootspoon";
+	include "Super Bootspork";
+	include "Mini-Zorcher";
+	include "Large Zorcher";
+	include "Super Large Zorcher";
+	include "Rapid Zorcher";
+	include "Zorch Propulsor";
+	include "Phasing Zorcher";
+	include "LAZ Device";
+}
+
+WolfenPlayer
+{
+	validate "IsSamsaraClass";
+	include "Knife";
+	include "Luger";
+	include "  Chaingun  ";
+	rename "  Chaingun  ", "Chaingun";
+	include " Rocket Launcher ";
+	rename " Rocket Launcher ", "Rocket Launcher";
+	include " Flamethrower ";
+	rename " Flamethrower ", "Flamethrower";
+	include "Spear of Destiny";
+}
+
+DukePlayer
+{
+	validate "IsSamsaraClass";
+	include "Pipebombs";
+	include "Mighty Boot";
+	include "Glock 17";
+	include "  Shotgun  ";
+	rename "  Shotgun  ", "Shotgun";
+	include "Explosive Shotgun";
+	include "Chaingun Cannon"; //makes me sweat
+	include "RPG";
+	include "Freezethrower";
+	include "Devastator";
+}
+
+CorvusPlayer
+{
+	validate "IsSamsaraClass";
+	include "Gauntlets of the Necromancer";
+	include " Staff ";
+	rename " Staff ", "Staff";
+	include "Elven Wand";
+	include " Firemace ";
+	rename " Firemace ", "Firemace";
+	include "Ethereal Crossbow";
+	include "Dragon Claw";
+	include "Phoenix Rod";
+	include "Hellstaff";
+}
+
+HexenPlayer
+{
+	validate "IsSamsaraClass";
+	include "Mace of Contrition";
+	include "Sapphire Wand";
+	include "Frost Shards";
+	include "Timon's Axe";
+	include "Serpent Staff";
+	include "Hammer of Retribution";
+	include "Firestorm";
+	include "Wraithverge";
+}
+
+MarathonPlayer
+{
+	validate "IsSamsaraClass";
+	include "Tech.50 Pacifier";
+	include "Steel Knuckles";
+	include ".44 Magnum Mega Class A1";
+	include "KKV-7 SMG Flechette";
+	include "WSTE-M5 Combat Shotgun";
+	include "Fusion Pistol";
+	include "MA-75B Assault Rifle";
+	include "SPNKR-XP SSM Launcher";
+	include "TOZT-7 Napalm Unit";
+	include "ONI-71 Wave Motion Cannon";
+	include "Alien Weapon";
+	include " Alien Weapon ";
+}
+
+QuakePlayer
+{
+	validate "IsSamsaraClass";
+	include "Axe";
+	include "Mjolnir";
+	include "Single Shotgun"; //thank god
+	include "Double Shotgun";
+	include "Grenade Launcher"; //wait a second...
+	include "Nailgun";
+	include "  Rocket Launcher  "; //GODDAMNIT
+	rename "  Rocket Launcher  ", "Rocket Launcher";
+	include "Super Nailgun";
+	include "Thunderbolt";
+}

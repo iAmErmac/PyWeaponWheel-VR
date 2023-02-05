@@ -1,0 +1,60 @@
+version "2.5.0"
+
+const MAXITERATIONS = 32676;
+
+#include "zscript/pyw/parse.zsc"
+
+Class OptionMenuItemPWWStaticText : OptionMenuItemStaticText
+{ 
+	int drawLabelBabel(int indent, int y, int color, bool grayed = false)
+	{
+		Font chungus = "ITTYBITY";
+		String label = Stringtable.Localize(mLabel);
+		
+		int overlay = grayed? Color(96,48,0,0) : 0;
+
+		int x;
+		int w = chungus.StringWidth(label) * CleanXfac_1;
+		if (!mCentered) x = indent - w;
+		else x = (screen.GetWidth() - w) / 2;
+		screen.DrawText (chungus, Font.CR_UNTRANSLATED, x, y, label, DTA_CleanNoMove_1, true, DTA_ColorOverlay, overlay);
+		return x;
+	}
+
+	override int Draw(OptionMenuDescriptor desc, int y, int indent, bool selected)
+	{
+		drawLabelBabel(indent, y, mColor);
+		return -1;
+	}
+
+}
+
+Class Py_WeaponWheelInvuln : PowerInvulnerable
+{
+	Default
+	{
+		Powerup.Duration -1000;
+	}
+}
+
+Class Py_WeaponWheel_Weapon
+{
+	class<Weapon> weaponClass;
+	string weaponTag;
+	TextureID weaponIcon;
+	
+	Vector2 weaponScale;
+	
+	class<Weapon> weaponMerge;
+	class<Weapon> weaponOrig;
+	bool mergeDir;
+	
+	int weaponSlot;
+	int weaponPriority;
+	int weaponAngle;
+	
+	bool hidden;
+}
+
+#include "zscript/pyw/ev_core.zsc"
+#include "zscript/pyw/ev_drawer.zsc"

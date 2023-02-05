@@ -1,0 +1,54 @@
+// Embers of Armageddon
+
+EOA_PlayerBase
+{
+	alpha_normal 0.4;
+	alpha_inactive 0.1;
+	renderstyle "Style_Add";
+	forceicon "EOA_Pistol", "*", 0.65;
+	forceicon "EOA_CombatShotgun", "*", 0.65;
+	forceicon "EOA_SuperShotgun", "*", 0.65;
+	forceicon "EOA_HeavyAssaultRifle", "*", 0.65;
+	forceicon "EOA_RocketLauncher", "*", 0.65;
+	forceicon "EOA_PlasmaRifle", "*", 0.65;
+	forceicon "EOA_GaussCannon", "*", 0.65;
+	forceicon "EOA_Chaingun", "*", 0.65;
+	forceicon "EOA_BFG", "*", 0.65;
+	forceicon "EOA_Chainsaw", "*", 0.65;
+}
+
+// Combined Arms
+
+DoomPlayer //curses! foiled again...
+{
+	validate "seekritthing";
+	hide "Daibatana";
+	hide "TSbrick";
+	hide "ParticleSmasher";
+	hide "SKpistol";
+	hide "IcarusLauncher";
+	hide "RevenantBox";
+	
+	// Collaborations man
+	forceicon "D3PS", "graphics/pywheel/icons/pyw_icon_capistol.png";
+	rename "WhiplashShotgun", "Whiplash Shotgun";
+	rename "SharpShooter", "Sharp Shooter";
+	rename "Gnasher", "Gnasher Nailgun";
+	rename "CygnisRL", "Cygnis Rocket Launcher";
+	rename "BusterRifle", "Buster Rifle";
+	
+	// Blasting master
+	forceicon "MantisBunker", "MBPUA0";
+	forceicon "BMIcebeam", "graphics/pywheel/icons/pyw_icon_caicebeam.png";
+	forceicon "BmShotgun", "BSPUA0";
+	forceicon "BmSSG", "BSPUA0";
+	forceicon "BMmachinegun", "DFMGA0";
+	forceicon "BMgrenader", "GGPUA0";
+	forceicon "BMPlasmaGun", "BMPLA0";
+	
+	rename "TSBrick", "Plakanomicon";
+	rename "RevenantBox", "Pocket Revenants";
+	rename "IcarusLauncher", "Icarus Launcher";
+	rename "ParticleSmasher", "Particle Smasher";
+	rename "SKPistol", "Tactical Pistol";
+}

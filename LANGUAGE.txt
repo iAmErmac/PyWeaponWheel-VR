@@ -1,0 +1,11 @@
+[default enu]
+
+PWW_GoldAW = "\ckAssault Rifle";
+PWW_GoldHG = "\ckHandgun";
+PWW_GoldHS = "\ckHunting Shotgun";
+PWW_GoldCS = "\ckCowboy Shotgun";
+PWW_GoldTB = "\ckTrumpetBuss";
+PWW_GoldSS = "\ckStar Shooter";
+PWW_GoldCP = "\ckCupid Mark 5";
+
+PWW_MenuTitle = "PyWeaponWheel Options";

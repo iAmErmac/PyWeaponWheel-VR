@@ -1,0 +1,37 @@
+AddOptionMenu "OptionsMenu"
+{
+	StaticText ""
+	Submenu "$PWW_MenuTitle", "PyWheelMenu"
+}
+
+OptionValue Py_Inverted
+{
+	0, "No"
+	1, "Invert X"
+	2, "Invert Y"
+	3, "Invert X/Y"
+}
+
+OptionMenu "PyWheelMenu"
+{
+	Title "$PWW_MenuTitle"
+	StaticText ""
+	Control "Open Weapon Wheel", "+pyweaponwheel"
+	PWWStaticText "Bind this!"
+	StaticText ""
+	Option "Freeze when wheel is open", "py_weaponwheel_freeze", "OnOff"
+	PWWStaticText "Monsters, projectiles, and the player will freeze"
+	PWWStaticText "in place while the wheel is open. Recommended for"
+	PWWStaticText "controller players and fast-paced mods."
+	StaticText ""
+	Option "Invert wheel controls", "py_weaponwheel_invert", "Py_Inverted"
+	PWWStaticText "There are four options for inverted controls."
+	PWWStaticText "Choose one that suits your control style best!"
+	StaticText ""
+	StaticText "Below options require map restart."
+	StaticText ""
+	Option "Fade music when wheel is open", "py_weaponwheel_musicfade", "OnOff"
+	PWWStaticText "Fades the music out when you open the weapon wheel."
+	PWWStaticText "Warning: Doesn't play well with MIDIs, or other"
+	PWWStaticText "mods that mess with the music volume. Beware."
+}

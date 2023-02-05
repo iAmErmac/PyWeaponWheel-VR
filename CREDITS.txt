@@ -1,0 +1,15 @@
+[ DrPyspy ]
+
+	- ZScript code, wheel graphics, etc.
+
+[ m8f ]
+
+	- Fixed wheel crash
+	
+[ Jimmy ]
+
+	- Diet Log font
+
+[ ZZYZX ]
+
+	- Crowbar placeholder graphic
