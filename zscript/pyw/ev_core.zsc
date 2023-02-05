@@ -33,6 +33,7 @@ Class Py_WeaponWheelEventHandler : EventHandler
 	
 	Array<int> projectileVelX, projectileVelY, projectileVelZ;
 	bool isLevelFrozen;
+	int wheelCloseCounter;
 	
 	enum E_WeaponSortMode
 	{
@@ -835,12 +836,40 @@ Class Py_WeaponWheelEventHandler : EventHandler
 			{
 				musicFade-=fadeSpeed;
 			}
+			
+			//This is to disable invulnerability after wheel close when loaded with bullet-time-x mod
+			if(wheelCloseCounter > 0)
+			{
+				wheelCloseCounter--;
+			}
+			else if(wheelCloseCounter == 0)
+			{
+				bool playerSlowMoInvulnerable = CVar.GetCVar("py_weaponwheel_invul", players[consoleplayer]).GetBool();
+				if(playerSlowMoInvulnerable) players[consoleplayer].mo.bInvulnerable = false;
+				wheelCloseCounter = -1;
+			}
 		}
 	}
 	
 	//Freeze all monsters and projectiles
 	Void FreezeActors()
 	{
+		bool useSlowMo = CVar.GetCVar("py_weaponwheel_slowmo", players[consoleplayer]).GetBool();
+		bool useSlowMoSound = CVar.GetCVar("py_weaponwheel_slow_sound", players[consoleplayer]).GetBool();
+		
+		bool playerSlowMoInvulnerable = CVar.GetCVar("py_weaponwheel_invul", players[consoleplayer]).GetBool();
+		if(playerSlowMoInvulnerable) players[consoleplayer].mo.bInvulnerable = true; //Make player invulnerable during freeze/slow-mo
+		isLevelFrozen = true;
+		
+		string btClassName = "BulletTime";
+		class<EventHandler> btLoaded = btClassName;
+		
+		if(btLoaded && useSlowMo)
+		{
+			SendNetworkEvent("btRemoteActivate", useSlowMoSound, 20);
+			return;
+		}
+	
 		projectileVelX.Clear();
 		projectileVelY.Clear();
 		projectileVelZ.Clear();
@@ -864,12 +893,26 @@ Class Py_WeaponWheelEventHandler : EventHandler
 				Mo.vel = (0, 0, 0);
             }
         }
-		isLevelFrozen = true;
 	}
 	
 	//Thaw all monsters and projectiles
 	Void ThawActors()
 	{
+		bool useSlowMo = CVar.GetCVar("py_weaponwheel_slowmo", players[consoleplayer]).GetBool();
+		bool useSlowMoSound = CVar.GetCVar("py_weaponwheel_slow_sound", players[consoleplayer]).GetBool();
+		
+		wheelCloseCounter = 35; //This counter will make sure invulnerability is disabled when wheel is closed
+		isLevelFrozen = false;
+		
+		string btClassName = "BulletTime";
+		class<EventHandler> btLoaded = btClassName;
+		
+		if(btLoaded && useSlowMo)
+		{
+			SendNetworkEvent("btRemoteDeactivate", useSlowMoSound);
+			return;
+		}
+		
 		ThinkerIterator It = ThinkerIterator.Create();
         Actor Mo;
 		Int mCount = 0;
@@ -890,7 +933,6 @@ Class Py_WeaponWheelEventHandler : EventHandler
 				}
             }
         }
-		isLevelFrozen = false;
 	}
 	
 	//Freeze player in place
