@@ -10,8 +10,14 @@ The PyWeaponWheel is great not only for normal play, but its also a great enhanc
 
 Check the PyWeaponWheel discussion over here: https://forum.zdoom.org/viewtopic.php?t=61061
 
+## What Changed in VR Version?
+* Since level freezing also locks up head-tracking so it is replaced by new codes to freeze all monsters and projectiles instead
+* Mouse control for the weapon wheel is replaced by joystick control (off-hand joystick)
+* When weapon wheel is open the player movement is disabled
+* Releasing weapon wheel button no longer closes the wheel. Instead need to press "attack" or "use" button to select highlighted weapon and close weapon wheel.
+
 ## Known Issues
-* Anything other than weapons, monsters and actors will not freeze when the weapon wheel is open, including ACS scripts and platforms/lifts.
+* Anything other than monsters and proectiles will not freeze when the weapon wheel is open including decorative actors, ACS scripts and platforms/lifts.
 	
 ## How Does This Interact With Mods?
 
@@ -37,3 +43,10 @@ Here is the process of how the addon decides what icon to use:
 * Samsara
 * Weasel Presents: Terrorists!
 * Hunter's Moon
+
+## Credits
+* DrPyspy - ZScript code, wheel graphics, etc.
+* m8f - Fixed wheel crash
+* Jimmy- Diet Log font
+* ZZYZX - Crowbar placeholder graphic
+* Ermac - Modified the codes to work better in VR

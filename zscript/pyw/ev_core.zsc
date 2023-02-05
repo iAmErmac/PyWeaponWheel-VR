@@ -31,6 +31,9 @@ Class Py_WeaponWheelEventHandler : EventHandler
 	
 	bool manyWeapon;
 	
+	Array<int> projectileVelX, projectileVelY, projectileVelZ;
+	bool isLevelFrozen;
+	
 	enum E_WeaponSortMode
 	{
 		WSM_Nothing,
@@ -630,10 +633,12 @@ Class Py_WeaponWheelEventHandler : EventHandler
 			return;
 		}
 		//wheelIsOpen = (players[0].mo.GetPlayerInput(INPUT_BUTTONS) & BT_JUMP);
+		/*
 		if(CVar.GetCVar("py_weaponwheel_freeze", players[0]).GetInt()==true)
 		{
 			level.frozen = wheelIsOpen;//&&level.maptime%3!=0;
 		}
+		*/
 		invertControls = CVar.GetCVar("py_weaponwheel_invert", players[0]).GetInt();
 		if(musicFadeEnabled&&musicFade>0)
 		{
@@ -649,11 +654,13 @@ Class Py_WeaponWheelEventHandler : EventHandler
 			{
 				musicFade+=fadeSpeed;
 			}
+			/*
 			if(level.frozen)
 			{
 				players[0].viewz = players[0].mo.pos.z+players[0].viewheight;
 				players[0].bob = 0;
 			}
+			*/
 			if(oldSelection!=currentSelection)
 			{
 				S_Sound("menu/change",5);
@@ -687,6 +694,7 @@ Class Py_WeaponWheelEventHandler : EventHandler
 			}
 			oldSelection = currentSelection;
 			
+			/*
 			double pitchMod = 1.6;
 			double yawMod = 1.2;
 			if(invertControls==PY_INVERTX||invertControls==PY_INVERTXY) yawMod *=-1;
@@ -694,6 +702,16 @@ Class Py_WeaponWheelEventHandler : EventHandler
 			
 			realMouse.x-=players[0].original_cmd.yaw * (360./65536.)*yawMod;
 			realMouse.y-=players[0].original_cmd.pitch * (360./65536.)*pitchMod;
+			*/
+			
+			//Let us use joystick as mouse
+			let joypad_speed = 20;
+			let pos = joypad_speed * (
+					15.0 * players[0].original_cmd.sidemove		/ 10240,
+				-	15.0 * players[0].original_cmd.forwardmove	/ 12800);
+			realMouse.x = pos.x;
+			realMouse.y = pos.y;
+			
 			if(point_distance(0,0,int(realMouse.x),int(realMouse.y))>6000)
 			{
 				int angler = point_direction(0,0,int(realMouse.x),int(realMouse.y));
@@ -719,6 +737,7 @@ Class Py_WeaponWheelEventHandler : EventHandler
 					break;
 				}
 			}
+			/*
 			if(players[0].mo!=null)
 			{
 				players[0].mo.pitch = oldPitch;
@@ -772,9 +791,14 @@ Class Py_WeaponWheelEventHandler : EventHandler
 				}
 				
 			}
+			*/
+			
+			//Always freeze player when wheel is open
+			FreezePlayer(players[consoleplayer]);
 		}
 		else
 		{
+			/*
 			if(players[0].mo!=null)
 			{
 				if(oldPTics.Size()>0)
@@ -802,6 +826,7 @@ Class Py_WeaponWheelEventHandler : EventHandler
 					}
 				}
 			}
+			*/
 			if(alphaFade>fadeSpeed)
 			{
 				alphaFade-=fadeSpeed;
@@ -813,11 +838,86 @@ Class Py_WeaponWheelEventHandler : EventHandler
 		}
 	}
 	
+	//Freeze all monsters and projectiles
+	Void FreezeActors()
+	{
+		projectileVelX.Clear();
+		projectileVelY.Clear();
+		projectileVelZ.Clear();
+			
+		ThinkerIterator It = ThinkerIterator.Create();
+        Actor Mo;
+        While (Mo = Actor(It.Next()))
+        {
+            If (Mo && (Mo.bISMONSTER || Mo.bMISSILE))
+            {
+                Mo.tics = -1;
+				Mo.gravity = 0;
+				
+				if(Mo.bMISSILE)
+				{
+					projectileVelX.Push(Mo.vel.x);
+					projectileVelY.Push(Mo.vel.y);
+					projectileVelZ.Push(Mo.vel.z);
+				}
+				
+				Mo.vel = (0, 0, 0);
+            }
+        }
+		isLevelFrozen = true;
+	}
+	
+	//Thaw all monsters and projectiles
+	Void ThawActors()
+	{
+		ThinkerIterator It = ThinkerIterator.Create();
+        Actor Mo;
+		Int mCount = 0;
+        While (Mo = Actor(It.Next()))
+        {
+            If (Mo && (Mo.bISMONSTER || Mo.bMISSILE))
+            {
+                Mo.tics = 1;
+				Mo.gravity = Mo.default.gravity;
+				Mo.vel = Mo.default.vel;
+				
+				if(Mo.bMISSILE)
+				{
+					Mo.vel.x = projectileVelX[mCount];
+					Mo.vel.y = projectileVelY[mCount];
+					Mo.vel.z = projectileVelZ[mCount];
+					mCount++;
+				}
+            }
+        }
+		isLevelFrozen = false;
+	}
+	
+	//Freeze player in place
+	Void FreezePlayer(PlayerInfo player)
+	{
+		player.vel = (0, 0);
+		player.mo.vel = (0, 0, 0);
+		player.mo.gravity = 0;
+	}
+	
+	//Thaw player
+	Void ThawPlayer(PlayerInfo player)
+	{
+		player.vel = player.mo.default.vel.xy;
+		player.mo.vel = player.mo.default.vel;
+		player.mo.gravity = player.mo.default.gravity;
+	}
+	
 	Override Void NetworkProcess(ConsoleEvent e)
 	{
 		if(e.name == 'pyweaponwheelon')
 		{
-            if (wheelIsOpen) { return; } // thnx to m8f!
+            if (wheelIsOpen)
+			{
+				SendNetworkEvent("pyweaponwheeloff");
+				return; 
+			}
 			wheelShow.Clear();
 			wheelIsOpen = true;
 			if(point_distance(0,0,int(realMouse.x),int(realMouse.y))>32)
@@ -825,11 +925,17 @@ Class Py_WeaponWheelEventHandler : EventHandler
 				realMouse = (0,0)+realMouse*0.1;
 			}
 			fakeMouse = realMouse;
+			/*
 			if(players[0].mo!=null)
 			{
 				oldPitch = int(players[0].mo.pitch);
 				oldYaw = int(players[0].mo.angle);
-				//players[0].mo.GiveInventory("Py_WeaponWheelInvuln",1);
+				players[0].mo.GiveInventory("Py_WeaponWheelInvuln",1);
+			}
+			*/
+			if(CVar.GetCVar("py_weaponwheel_freeze", players[e.Player]).GetBool())
+			{
+				freezeActors();
 			}
 		}
 		else if(e.name == 'pyweaponwheeloff')
@@ -849,6 +955,25 @@ Class Py_WeaponWheelEventHandler : EventHandler
 			}
 			wheelSort = false;
 			wheelIsOpen = false;
+			if(isLevelFrozen) ThawActors();
+			ThawPlayer(players[e.Player]);
 		}
+	}
+	
+	Override Bool InputProcess(InputEvent e)
+	{
+		int key1, key2, key3, key4;
+		
+		if (e.Type == InputEvent.Type_KeyDown && automapactive == false) // not when automap is active
+		{
+			[key1, key2] = bindings.getKeysForCommand("+attack");
+			[key3, key4] = bindings.getKeysForCommand("+use");
+			if(e.keyScan == key1 || e.keyScan == key2 || e.keyScan == key3 || e.keyScan == key4)
+			{
+				if (wheelIsOpen) SendNetworkEvent("pyweaponwheeloff");
+			}
+		}
+		
+		return false;
 	}
 }

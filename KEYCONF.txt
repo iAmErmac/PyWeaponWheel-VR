@@ -1,2 +1,1 @@
-alias "+pyweaponwheel" "netevent pyweaponwheelon"
-alias "-pyweaponwheel" "netevent pyweaponwheeloff"
+alias "pyweaponwheel" "netevent pyweaponwheelon"
