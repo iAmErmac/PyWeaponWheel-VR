@@ -427,7 +427,7 @@ class BulletTime : EventHandler
 			
 			btPlayerActivator = player;
 			btActive = true;
-			console.printf("Bullet Time!");
+			//console.printf("Bullet Time!");
 		} 
 		else if (btActive)
 		{ // stops bullet time

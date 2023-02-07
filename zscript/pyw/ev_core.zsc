@@ -78,102 +78,99 @@ Class Py_WeaponWheelEventHandler : EventHandler
 		icons_alpha[APS_Normal] = 1.0;
 		icons_alpha[APS_Inactive] = 0.5;
 		
+		PlayerInfo player = players[consolePlayer];
+		
 		crowbarTex = TexMan.CheckForTexture("graphics/pywheel/crowbar.png",TexMan.Type_Any);
-			bool ret1;//is this a wepon in slottt???
-			int ret2;//second return is slot
-			int ret3;
-			//Console.Printf("\ctbegin the search...");
-			for(int i = 0;i<AllActorClasses.Size();i++)
+		bool ret1;//is this a wepon in slottt???
+		int ret2;//second return is slot
+		int ret3;
+		for(int i = 0;i<AllActorClasses.Size();i++)
+		{
+			let type = (class<Weapon>)(AllActorClasses[i]);
+			if(type!=null)
 			{
-				let type = (class<Weapon>)(AllActorClasses[i]);
-				if(type!=null)
+				Class<Actor> testtype = Actor.GetReplacement(type);
+				if(testtype is "Weapon" && player.weapons.LocateWeapon((class<Weapon>)(testtype)))
 				{
-					Class<Actor> testtype = Actor.GetReplacement(type);
-					if(testtype is "Weapon"&&players[0].weapons.LocateWeapon((class<Weapon>)(testtype)))
+					type = (class<Weapon>)(testtype);
+					bool isMine = false;
+					int restrictSize = GetDefaultByType(type).RestrictedToPlayerClass.Size();
+					if(restrictSize>0)
 					{
-						//Console.Printf("\ch today we will be examining "..type.GetClassName());
-						type = (class<Weapon>)(testtype);
-						bool isMine = false;
-						int restrictSize = GetDefaultByType(type).RestrictedToPlayerClass.Size();
-						if(restrictSize>0)
+						for(int b = 0;b<restrictSize;b++)
 						{
-							for(int b = 0;b<restrictSize;b++)
+							Class<Actor> nameCheck = GetDefaultByType(type).RestrictedToPlayerClass[b];
+							if(nameCheck is player.mo.GetClass())
 							{
-								Class<Actor> nameCheck = GetDefaultByType(type).RestrictedToPlayerClass[b];
-								//Console.Printf(nameCheck.GetClassName().." "..players[0].mo.GetClassName());
-								if(nameCheck is players[0].mo.GetClass())
-								{
-									isMine=true;
-								}
+								isMine=true;
 							}
-							//Console.Printf("restrictSize is "..restrictSize);
 						}
-						else
-						{
-							isMine=true;
-						}
-						if(isMine)
-						{
-							[ret1, ret2, ret3] = players[0].weapons.LocateWeapon(type);
-							//Console.Printf("\ck"..type.GetClassName().." is weapon for me "..ret3);
-							Py_WeaponWheel_Weapon pushItIn = new("Py_WeaponWheel_Weapon");
-							pushItIn.weaponClass = type;
-							pushItIn.weaponSlot = ret2;
-							pushItIn.weaponPriority = ret3;
-							pushItIn.weaponScale = (1,1);
-							pushItIn.weaponTag = GetDefaultByType(type).GetTag();
-							wheelWeapons.Push(pushitIn);
-						}
+					}
+					else
+					{
+						isMine=true;
+					}
+					if(isMine)
+					{
+						[ret1, ret2, ret3] = player.weapons.LocateWeapon(type);
+						Py_WeaponWheel_Weapon pushItIn = new("Py_WeaponWheel_Weapon");
+						pushItIn.weaponClass = type;
+						pushItIn.weaponSlot = ret2;
+						pushItIn.weaponPriority = ret3;
+						pushItIn.weaponScale = (1,1);
+						pushItIn.weaponTag = GetDefaultByType(type).GetTag();
+						wheelWeapons.Push(pushitIn);
 					}
 				}
 			}
+		}
+		
+		State weaponSpawnState;
+		for(int i = 0;i<wheelWeapons.Size();i++)
+		{
+			TextureID wepIcon = GetDefaultByType(wheelWeapons[i].weaponClass).Icon;
+			Vector2 weaponScaled = (1,1);
+			weaponSpawnState = GetDefaultByType(wheelWeapons[i].weaponClass).SpawnState;
 			
-			State weaponSpawnState;
-			for(int i = 0;i<wheelWeapons.Size();i++)
+			if(TexMan.GetName(wepIcon)=="" || TexMan.GetName(wepIcon)~=="ALTHUDCF") //wtf
 			{
-				TextureID wepIcon = GetDefaultByType(wheelWeapons[i].weaponClass).Icon;
-				Vector2 weaponScaled = (1,1);
-				weaponSpawnState = GetDefaultByType(wheelWeapons[i].weaponClass).SpawnState;
-				
-				if(TexMan.GetName(wepIcon)==""||TexMan.GetName(wepIcon)~=="ALTHUDCF") //wtf
-				{
-					weaponScaled = GetDefaultByType(wheelWeapons[i].weaponClass).scale;
-					wepIcon = weaponSpawnState.GetSpriteTexture(1,0);
-				}
-				
-				int overflowProtection = 0;
-				while(overflowProtection<25&&(TexMan.GetName(wepIcon)=="TNT1A0"||TexMan.GetName(wepIcon)=="NULLA0")&&weaponSpawnState.NextState!=null)
-				{
-					weaponSpawnState = weaponSpawnState.NextState;
-					wepIcon = weaponSpawnState.GetSpriteTexture(1,0);
-					overflowProtection++;
-				}
-				
-				if(TexMan.GetName(wepIcon)=="TNT1A0"||TexMan.GetName(wepIcon)=="NULLA0")
-				{
-					weaponScaled = (0.3,0.3);
-					weaponSpawnState = GetDefaultByType(wheelWeapons[i].weaponClass).ResolveState("Ready");
-					wepIcon = weaponSpawnState.GetSpriteTexture(1,0);
-				}
-				
-				//ready state
-				
-				overflowProtection = 0;
-				while(overflowProtection<25&&(TexMan.GetName(wepIcon)=="TNT1A0"||TexMan.GetName(wepIcon)=="NULLA0")&&weaponSpawnState.NextState!=null)
-				{
-					weaponSpawnState = weaponSpawnState.NextState;
-					wepIcon = weaponSpawnState.GetSpriteTexture(1,0);
-					overflowProtection++;
-				}
-				
-				if(TexMan.GetName(wepIcon)=="TNT1A0"||TexMan.GetName(wepIcon)=="NULLA0")
-				{
-					weaponScaled = (0.75,0.75*0.8);
-					wepIcon = crowbarTex;
-				}
-				wheelWeapons[i].weaponIcon = wepIcon;
-				wheelWeapons[i].weaponScale = (weaponScaled.x,weaponScaled.y);
+				weaponScaled = GetDefaultByType(wheelWeapons[i].weaponClass).scale;
+				wepIcon = weaponSpawnState.GetSpriteTexture(1,0);
 			}
+			
+			int overflowProtection = 0;
+			while(overflowProtection<25 && (TexMan.GetName(wepIcon)=="TNT1A0" || TexMan.GetName(wepIcon)=="NULLA0") && weaponSpawnState.NextState!=null)
+			{
+				weaponSpawnState = weaponSpawnState.NextState;
+				wepIcon = weaponSpawnState.GetSpriteTexture(1,0);
+				overflowProtection++;
+			}
+			
+			if(TexMan.GetName(wepIcon)=="TNT1A0" || TexMan.GetName(wepIcon)=="NULLA0")
+			{
+				weaponScaled = (0.3,0.3);
+				weaponSpawnState = GetDefaultByType(wheelWeapons[i].weaponClass).ResolveState("Ready");
+				wepIcon = weaponSpawnState.GetSpriteTexture(1,0);
+			}
+			
+			//ready state
+			
+			overflowProtection = 0;
+			while(overflowProtection<25 && (TexMan.GetName(wepIcon)=="TNT1A0" || TexMan.GetName(wepIcon)=="NULLA0") && weaponSpawnState.NextState!=null)
+			{
+				weaponSpawnState = weaponSpawnState.NextState;
+				wepIcon = weaponSpawnState.GetSpriteTexture(1,0);
+				overflowProtection++;
+			}
+			
+			if(TexMan.GetName(wepIcon)=="TNT1A0" || TexMan.GetName(wepIcon)=="NULLA0")
+			{
+				weaponScaled = (0.75,0.75*0.8);
+				wepIcon = crowbarTex;
+			}
+			wheelWeapons[i].weaponIcon = wepIcon;
+			wheelWeapons[i].weaponScale = (weaponScaled.x,weaponScaled.y);
+		}
 		
 		//=====================================
 		// begin the tokenization my friend
@@ -189,8 +186,6 @@ Class Py_WeaponWheelEventHandler : EventHandler
 			lumpy.AppendFormat("\n");
 		}
 		
-		//Console.Printf(""..lumpy);
-		
 		PyWheel_Tokenizer tokenitup = PyWheel_Tokenizer.Create(lumpy);
 		PyWheel_Token tokenboy = tokenitup.GoThru();
 		int safetyNet = 0;
@@ -202,9 +197,8 @@ Class Py_WeaponWheelEventHandler : EventHandler
 		int inthold = 0;
 		double doubleHold = 0; //watch your motherfuckin tone boy
 		bool jesusChristItsHim = true;
-		while(tokenboy.type!=PTK_EOF&&safetyNet<MAXITERATIONS)
+		while(tokenboy.type!=PTK_EOF && safetyNet<MAXITERATIONS)
 		{
-			//Console.Printf("\ck"..tokenboy.value);
 			if(tokenboy.type==PTK_Slash)
 			{
 				tokenboy = tokenitup.GoThru();
@@ -235,7 +229,6 @@ Class Py_WeaponWheelEventHandler : EventHandler
 									{
 										wheelWeapons[i].weaponScale *= doubleHold;
 									}
-									//Console.Printf(""..doubleHold);
 								}
 							}
 						}
@@ -279,7 +272,6 @@ Class Py_WeaponWheelEventHandler : EventHandler
 				{
 					if(sortMode==WSM_ForcingIcon)
 					{
-						//Console.Printf(""..tokenboy.value);
 						doubleHold = double(tokenboy.value.ToDouble());
 					}
 					else if(sortMode==WSM_SetAlpha)
@@ -345,7 +337,7 @@ Class Py_WeaponWheelEventHandler : EventHandler
 					{
 						case WSM_Validating:
 							Class<Inventory> chungus = tokenboy.value;
-							if(chungus!=null && !players[0].mo.FindInventory(chungus))
+							if(chungus!=null && !player.mo.FindInventory(chungus))
 							{
 								jesusChristItsHim = false;
 							}
@@ -409,7 +401,7 @@ Class Py_WeaponWheelEventHandler : EventHandler
 			else if(tokenboy.type==PTK_Identifier)
 			{
 				class<Actor> cls = tokenboy.value;
-				if(cls!=null&&players[0].mo is cls)
+				if(cls!=null && player.mo is cls)
 				{
 					removingWeps = true;
 				}
@@ -420,16 +412,6 @@ Class Py_WeaponWheelEventHandler : EventHandler
 		
 		//if the inclusion array is not empty then make us do the inclusive sort thing
 		inclusiveSort = useTheseWeapons.Size()>0;
-		
-		/*for(int i = 0;i<avoidTheseWeapons.Size();i++)
-		{
-			//Console.Printf("\ckavoid adding "..avoidTheseWeapons[i]);
-		}
-		
-		for(int i = 0;i<mergeTheseWeapons1.Size();i++)
-		{
-			//Console.Printf("\ck"..mergeTheseWeapons1[i].." will merge into "..mergeTheseWeapons2[i]);
-		}*/
 		
 		for(int i = 0;i<wheelWeapons.Size();i++)
 		{
@@ -455,11 +437,8 @@ Class Py_WeaponWheelEventHandler : EventHandler
 			
 				for(int v = 0;v<avoidTheseWeapons.Size();v++)
 				{
-					//Console.Printf("\crIs "..avoidTheseWeapons[v].." replacing "..wheelWeapons[i].weaponClass.GetClassName().."?");
-					//Console.Printf("\crRemove "..avoidTheseWeapons[v]);
 					if(avoidTheseWeapons[v] == wheelWeapons[i].weaponClass.GetClassName())
 					{
-						//Console.Printf("\cxThat's right, Jay! (Removed \ck"..wheelWeapons[i].weaponClass.GetClassName().."\cx)");
 						wheelWeapons.Delete(i);
 						i--;
 						fuckThisOneInParticular = true;
@@ -477,76 +456,68 @@ Class Py_WeaponWheelEventHandler : EventHandler
 		// Now sort thme fuckerr
 		//=====================================
 			
-				int i;
-				int j;
-				int flag = 1;
-				Py_WeaponWheel_Weapon temp;
-				int temp2;
-				int temp3;
-				int numLength = maxplayers; 
-				for(i = 1; (i <= wheelWeapons.Size()) && flag; i++)
-				{
-					flag = 0;
-					for (j=0; j < (wheelWeapons.Size() -1); j++)
-					{
-						if (wheelWeapons[j+1].weaponPriority > wheelWeapons[j].weaponPriority)
-						{ 
-							temp = wheelWeapons[j];  
-							wheelWeapons[j] = wheelWeapons[j+1];
-							wheelWeapons[j+1] = temp;
-							flag = 1;
-						}
-					}
-				}
-				
-				flag = 1;
-				
-				for(i = 1; (i <= wheelWeapons.Size()) && flag; i++)
-				{
-					flag = 0;
-					for (j=0; j < (wheelWeapons.Size() -1); j++)
-					{
-						if (wheelWeapons[j+1].weaponSlot > wheelWeapons[j].weaponSlot)
-						{ 
-							temp = wheelWeapons[j];  
-							wheelWeapons[j] = wheelWeapons[j+1];
-							wheelWeapons[j+1] = temp;
-							flag = 1;
-						}
-					}
-				}
-				
-				flag = 1;
-				
-				for(i = 1; (i < wheelWeapons.Size()) && flag; i++)
-				{
-					for (j=0; j < (wheelWeapons.Size()); j++)
-					{
-						//if(i!=j) Console.Printf("comparing "..wheelWeapons[i].weaponClass.GetClassName().." and "..wheelWeapons[j].weaponClass.GetClassName());
-						if (i!=j && wheelWeapons[i].weaponClass.GetClassName()==wheelWeapons[j].weaponClass.GetClassName())
-						{ 
-							//Console.Printf("they are same");
-							wheelWeapons.Delete(j);
-							if(i>j)
-							{
-								i--;
-							}
-							j=0;
-						}
-					}
-				}
-				
-		/*for(int i = 0;i<wheelWeapons.Size();i++)
+		int i;
+		int j;
+		int flag = 1;
+		Py_WeaponWheel_Weapon temp;
+		int temp2;
+		int temp3;
+		int numLength = maxplayers; 
+		for(i = 1; (i <= wheelWeapons.Size()) && flag; i++)
 		{
-			arrayMergeDir.Push(false);
-		}*/
+			flag = 0;
+			for (j=0; j < (wheelWeapons.Size() -1); j++)
+			{
+				if (wheelWeapons[j+1].weaponPriority > wheelWeapons[j].weaponPriority)
+				{ 
+					temp = wheelWeapons[j];  
+					wheelWeapons[j] = wheelWeapons[j+1];
+					wheelWeapons[j+1] = temp;
+					flag = 1;
+				}
+			}
+		}
+		
+		flag = 1;
+		
+		for(i = 1; (i <= wheelWeapons.Size()) && flag; i++)
+		{
+			flag = 0;
+			for (j=0; j < (wheelWeapons.Size() -1); j++)
+			{
+				if (wheelWeapons[j+1].weaponSlot > wheelWeapons[j].weaponSlot)
+				{ 
+					temp = wheelWeapons[j];  
+					wheelWeapons[j] = wheelWeapons[j+1];
+					wheelWeapons[j+1] = temp;
+					flag = 1;
+				}
+			}
+		}
+		
+		flag = 1;
+		
+		for(i = 1; (i < wheelWeapons.Size()) && flag; i++)
+		{
+			for (j=0; j < (wheelWeapons.Size()); j++)
+			{
+				if (i!=j && wheelWeapons[i].weaponClass.GetClassName()==wheelWeapons[j].weaponClass.GetClassName())
+				{
+					wheelWeapons.Delete(j);
+					if(i>j)
+					{
+						i--;
+					}
+					j=0;
+				}
+			}
+		}
 				
 		for(int i = 0;i<wheelWeapons.Size();i++)
 		{
 			int foundMerge=-1;
 			for(int v = 0;v<mergeTheseWeapons1.Size();v++)
 			{
-				//Console.Printf("\ckFUACK"..wheelWeapons.Size());
 				if(wheelWeapons[i].weaponClass.GetClassName()==mergeTheseWeapons1[v])
 				{
 					foundMerge=v;
@@ -570,12 +541,6 @@ Class Py_WeaponWheelEventHandler : EventHandler
 			}
 		}
 		
-		//Console.Printf("\n\n\n\cxHere are the final results:");
-		for(int i = 0;i<wheelWeapons.Size();i++)
-		{
-			//Console.Printf("\cg"..wheelWeapons[i].weaponClass.GetClassName());
-		}
-		
 		if(wheelWeapons.Size()>20)
 		{
 			manyWeapon = true;//too many to show good...
@@ -592,8 +557,7 @@ Class Py_WeaponWheelEventHandler : EventHandler
 	override void WorldLoaded(WorldEvent e)
 	{
 		currentSelection = 1;
-		//oldPTics = -2;
-		musicFadeEnabled = CVar.GetCVar("py_weaponwheel_musicfade", players[0]).GetBool();
+		musicFadeEnabled = CVar.GetCVar("py_weaponwheel_musicfade", players[consolePlayer]).GetBool();
 	}
 	
 	double outQuad(double t, double b, double c, double d)
@@ -625,7 +589,10 @@ Class Py_WeaponWheelEventHandler : EventHandler
 	
 	override void WorldTick()
 	{
-		if(!searchedWeps&&level.maptime>12)
+		PlayerInfo player = players[consolePlayer];
+		if(!player) return;
+		
+		if(!searchedWeps && level.maptime>12)
 		{
 			initializeWheel();
 		}
@@ -633,15 +600,8 @@ Class Py_WeaponWheelEventHandler : EventHandler
 		{
 			return;
 		}
-		//wheelIsOpen = (players[0].mo.GetPlayerInput(INPUT_BUTTONS) & BT_JUMP);
-		/*
-		if(CVar.GetCVar("py_weaponwheel_freeze", players[0]).GetInt()==true)
-		{
-			level.frozen = wheelIsOpen;//&&level.maptime%3!=0;
-		}
-		*/
-		invertControls = CVar.GetCVar("py_weaponwheel_invert", players[0]).GetInt();
-		if(musicFadeEnabled&&musicFade>0)
+		invertControls = CVar.GetCVar("py_weaponwheel_invert", player).GetInt();
+		if(musicFadeEnabled && musicFade>0)
 		{
 			SetMusicVolume(1.0-musicFade/2);
 		}
@@ -655,13 +615,6 @@ Class Py_WeaponWheelEventHandler : EventHandler
 			{
 				musicFade+=fadeSpeed;
 			}
-			/*
-			if(level.frozen)
-			{
-				players[0].viewz = players[0].mo.pos.z+players[0].viewheight;
-				players[0].bob = 0;
-			}
-			*/
 			if(oldSelection!=currentSelection)
 			{
 				S_Sound("menu/change",5);
@@ -673,18 +626,16 @@ Class Py_WeaponWheelEventHandler : EventHandler
 					bool fucked = false;
 					
 					// If there are too many weapons, or it is supposed to be hidden until the player has it, hide it
-					if((manyweapon||wheelWeapons[i].hidden) && !players[0].mo.FindInventory(wheelWeapons[i].weaponClass))
+					if((manyweapon || wheelWeapons[i].hidden) && !player.mo.FindInventory(wheelWeapons[i].weaponClass))
 					{
 						fucked = true;
 					}
-					if( (!wheelWeapons[i].mergeDir && wheelWeapons[i].weaponMerge!=null && players[0].mo.FindInventory(wheelWeapons[i].weaponMerge))
+					if( (!wheelWeapons[i].mergeDir && wheelWeapons[i].weaponMerge!=null && player.mo.FindInventory(wheelWeapons[i].weaponMerge))
 					||
-					(wheelWeapons[i].mergeDir && wheelWeapons[i].weaponMerge!=null && !players[0].mo.FindInventory(wheelWeapons[i].weaponMerge)) )
+					(wheelWeapons[i].mergeDir && wheelWeapons[i].weaponMerge!=null && !player.mo.FindInventory(wheelWeapons[i].weaponMerge)) )
 					{
 						fucked = true;
 					}
-					/*Console.Printf("getgetgetget "..wheelOrig[i]);
-					Console.Printf("gotgotgotgot "..wheelWeapons[i].GetClassName().." is "..fucked);*/
 					if(!fucked)
 					{
 						wheelShow.Push(i);
@@ -695,21 +646,11 @@ Class Py_WeaponWheelEventHandler : EventHandler
 			}
 			oldSelection = currentSelection;
 			
-			/*
-			double pitchMod = 1.6;
-			double yawMod = 1.2;
-			if(invertControls==PY_INVERTX||invertControls==PY_INVERTXY) yawMod *=-1;
-			if(invertControls==PY_INVERTY||invertControls==PY_INVERTXY) pitchMod *=-1;
-			
-			realMouse.x-=players[0].original_cmd.yaw * (360./65536.)*yawMod;
-			realMouse.y-=players[0].original_cmd.pitch * (360./65536.)*pitchMod;
-			*/
-			
 			//Let us use joystick as mouse
 			let joypad_speed = 20;
 			let pos = joypad_speed * (
-					15.0 * players[0].original_cmd.sidemove		/ 10240,
-				-	15.0 * players[0].original_cmd.forwardmove	/ 12800);
+					15.0 * player.original_cmd.sidemove		/ 10240,
+				-	15.0 * player.original_cmd.forwardmove	/ 12800);
 			realMouse.x = pos.x;
 			realMouse.y = pos.y;
 			
@@ -725,7 +666,6 @@ Class Py_WeaponWheelEventHandler : EventHandler
 				int angler = point_direction(0,0,int(fakeMouse.x),int(fakeMouse.y));
 				fakeMouse = (cos(angler)*78,sin(angler)*78);
 			}
-			//Console.Printf(""..point_distance(0,0,realMouse.x,realMouse.y));
 			int chooseAngle = point_direction(0,0,int(fakeMouse.x),int(-fakeMouse.y))+180;
 			int averageAngles = 360/max(1,wheelShow.Size());
 			int halfAngle = averageAngles/2;
@@ -738,96 +678,12 @@ Class Py_WeaponWheelEventHandler : EventHandler
 					break;
 				}
 			}
-			/*
-			if(players[0].mo!=null)
-			{
-				players[0].mo.pitch = oldPitch;
-				players[0].mo.angle = oldYaw;
-				players[0].mo.angle -= 1;
-				players[0].mo.pitch -= 1;
-				players[0].mo.A_SetAngle(players[0].mo.angle + 1, SPF_INTERPOLATE);
-				players[0].mo.A_SetPitch(players[0].mo.pitch + 1, SPF_INTERPOLATE);
-				
-				if(level.frozen&&oldPTics.Size()==0)
-				{
-					let pspr = players[0].psprites;
-					while (pspr)
-					{
-						oldPTics.Push(pspr.Tics);
-						pspr.Tics = -1;
-						pspr = pspr.Next;
-					}
-				}
-				
-				if(level.frozen)
-				{
-					if(oldPUTics.Size()==0)
-					{
-						for (int i = 0; i < AllActorClasses.Size(); i++)
-						{
-							let type = (Class<Powerup>)(AllActorClasses[i]);
-							let item = Powerup(players[0].mo.FindInventory(type));
-								
-							if (item)
-							{
-								oldPUTics.Push(item.EffectTics);
-							}
-						}
-					}
-					else
-					{
-						int fuckIt = 0;
-						for (int i = 0; i < AllActorClasses.Size(); i++)
-						{
-							let type = (Class<Powerup>)(AllActorClasses[i]);
-							let item = Powerup(players[0].mo.FindInventory(type));
-								
-							if (item)
-							{
-								item.EffectTics = oldPUTics[fuckIt];
-								fuckIt++;
-							}
-						}
-					}
-				}
-				
-			}
-			*/
 			
 			//Always freeze player when wheel is open
-			FreezePlayer(players[consoleplayer]);
+			FreezePlayer(player);
 		}
 		else
 		{
-			/*
-			if(players[0].mo!=null)
-			{
-				if(oldPTics.Size()>0)
-				{
-					let pspr = players[0].psprites;
-					while (pspr&&oldPTics.Size()>0)
-					{
-						pspr.Tics = oldPTics[0];
-						oldPTics.Delete(0);
-						pspr = pspr.Next;
-					}
-				}
-				if(oldPUTics.Size()>0)
-				{
-					for (int i = 0; i < AllActorClasses.Size(); i++)
-					{
-						let type = (Class<Powerup>)(AllActorClasses[i]);
-						let item = Powerup(players[0].mo.FindInventory(type));
-								
-						if (item && oldPUTics.Size()>0)
-						{
-							item.EffectTics = oldPUTics[0];
-							oldPUTics.Delete(0);
-						}
-					}
-				}
-			}
-			*/
 			if(alphaFade>fadeSpeed)
 			{
 				alphaFade-=fadeSpeed;
@@ -844,8 +700,8 @@ Class Py_WeaponWheelEventHandler : EventHandler
 			}
 			else if(wheelCloseCounter == 0)
 			{
-				bool playerSlowMoInvulnerable = CVar.GetCVar("py_weaponwheel_invul", players[consoleplayer]).GetBool();
-				if(playerSlowMoInvulnerable) players[consoleplayer].mo.bInvulnerable = false;
+				bool playerSlowMoInvulnerable = CVar.GetCVar("py_weaponwheel_invul", player).GetBool();
+				if(playerSlowMoInvulnerable) player.mo.bInvulnerable = false;
 				wheelCloseCounter = -1;
 			}
 		}
@@ -854,11 +710,14 @@ Class Py_WeaponWheelEventHandler : EventHandler
 	//Freeze all monsters and projectiles
 	Void FreezeActors()
 	{
-		bool useSlowMo = CVar.GetCVar("py_weaponwheel_slowmo", players[consoleplayer]).GetBool();
-		bool useSlowMoSound = CVar.GetCVar("py_weaponwheel_slow_sound", players[consoleplayer]).GetBool();
+		PlayerInfo player = players[consolePlayer];
+		if(!player) return;
 		
-		bool playerSlowMoInvulnerable = CVar.GetCVar("py_weaponwheel_invul", players[consoleplayer]).GetBool();
-		if(playerSlowMoInvulnerable) players[consoleplayer].mo.bInvulnerable = true; //Make player invulnerable during freeze/slow-mo
+		bool useSlowMo = CVar.GetCVar("py_weaponwheel_slowmo", player).GetBool();
+		bool useSlowMoSound = CVar.GetCVar("py_weaponwheel_slow_sound", player).GetBool();
+		
+		bool playerSlowMoInvulnerable = CVar.GetCVar("py_weaponwheel_invul", player).GetBool();
+		if(playerSlowMoInvulnerable) player.mo.bInvulnerable = true; //Make player invulnerable during freeze/slow-mo
 		isLevelFrozen = true;
 		
 		string btClassName = "BulletTime";
@@ -878,7 +737,7 @@ Class Py_WeaponWheelEventHandler : EventHandler
         Actor Mo;
         While (Mo = Actor(It.Next()))
         {
-            If (Mo && (Mo.bISMONSTER || Mo.bMISSILE))
+            If (Mo && (Mo.bISMONSTER || Mo.bMISSILE) && mo.health > 0)
             {
                 Mo.tics = -1;
 				Mo.gravity = 0;
@@ -898,8 +757,11 @@ Class Py_WeaponWheelEventHandler : EventHandler
 	//Thaw all monsters and projectiles
 	Void ThawActors()
 	{
-		bool useSlowMo = CVar.GetCVar("py_weaponwheel_slowmo", players[consoleplayer]).GetBool();
-		bool useSlowMoSound = CVar.GetCVar("py_weaponwheel_slow_sound", players[consoleplayer]).GetBool();
+		PlayerInfo player = players[consolePlayer];
+		if(!player) return;
+		
+		bool useSlowMo = CVar.GetCVar("py_weaponwheel_slowmo", player).GetBool();
+		bool useSlowMoSound = CVar.GetCVar("py_weaponwheel_slow_sound", player).GetBool();
 		
 		wheelCloseCounter = 35; //This counter will make sure invulnerability is disabled when wheel is closed
 		isLevelFrozen = false;
@@ -907,10 +769,9 @@ Class Py_WeaponWheelEventHandler : EventHandler
 		string btClassName = "BulletTime";
 		class<EventHandler> btLoaded = btClassName;
 		
-		if(btLoaded && useSlowMo)
+		if(btLoaded)
 		{
 			SendNetworkEvent("btRemoteDeactivate", useSlowMoSound);
-			return;
 		}
 		
 		ThinkerIterator It = ThinkerIterator.Create();
@@ -918,13 +779,13 @@ Class Py_WeaponWheelEventHandler : EventHandler
 		Int mCount = 0;
         While (Mo = Actor(It.Next()))
         {
-            If (Mo && (Mo.bISMONSTER || Mo.bMISSILE))
+            If (Mo && (Mo.bISMONSTER || Mo.bMISSILE) && mo.health > 0)
             {
                 Mo.tics = 1;
 				Mo.gravity = Mo.default.gravity;
-				Mo.vel = Mo.default.vel;
+				if(!Mo.bMISSILE) Mo.vel = Mo.default.vel;
 				
-				if(Mo.bMISSILE)
+				if(Mo.bMISSILE && projectileVelX.size())
 				{
 					Mo.vel.x = projectileVelX[mCount];
 					Mo.vel.y = projectileVelY[mCount];
@@ -933,6 +794,10 @@ Class Py_WeaponWheelEventHandler : EventHandler
 				}
             }
         }
+		
+		projectileVelX.Clear();
+		projectileVelY.Clear();
+		projectileVelZ.Clear();
 	}
 	
 	//Freeze player in place
@@ -953,6 +818,9 @@ Class Py_WeaponWheelEventHandler : EventHandler
 	
 	Override Void NetworkProcess(ConsoleEvent e)
 	{
+		PlayerInfo player = players[e.player];
+		if(!player) return;
+		
 		if(e.name == 'pyweaponwheelon')
 		{
             if (wheelIsOpen)
@@ -967,14 +835,6 @@ Class Py_WeaponWheelEventHandler : EventHandler
 				realMouse = (0,0)+realMouse*0.1;
 			}
 			fakeMouse = realMouse;
-			/*
-			if(players[0].mo!=null)
-			{
-				oldPitch = int(players[0].mo.pitch);
-				oldYaw = int(players[0].mo.angle);
-				players[0].mo.GiveInventory("Py_WeaponWheelInvuln",1);
-			}
-			*/
 			if(CVar.GetCVar("py_weaponwheel_freeze", players[e.Player]).GetBool())
 			{
 				freezeActors();
@@ -982,18 +842,17 @@ Class Py_WeaponWheelEventHandler : EventHandler
 		}
 		else if(e.name == 'pyweaponwheeloff')
 		{
-			if(players[0].mo!=null)
+			if(player.mo!=null)
 			{
 				if(wheelShow.Size()>0)
 				{
 					int curSelMod = wheelShow[currentSelection];
-					if(players[0].mo.FindInventory(wheelWeapons[curSelMod].weaponClass))
+					if(player.mo.FindInventory(wheelWeapons[curSelMod].weaponClass))
 					{
-						players[0].mo.A_SelectWeapon(wheelWeapons[curSelMod].weaponClass);
+						player.mo.A_SelectWeapon(wheelWeapons[curSelMod].weaponClass);
 						S_Sound("menu/choose",5);
 					}
 				}
-				//players[0].mo.TakeInventory("Py_WeaponWheelInvuln",1);
 			}
 			wheelSort = false;
 			wheelIsOpen = false;
