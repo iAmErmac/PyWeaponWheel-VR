@@ -96,7 +96,7 @@ Class PyWheel_Tokenizer
 	
 	virtual PyWheel_Token GoThru()
 	{
-		while(isWhitespace(lumpString.CharCodeAt(currentPos))&&currentPos<=lumpString.Length())
+		while(isWhitespace(lumpString.CharCodeAt(currentPos)) && currentPos<=lumpString.Length())
 		{
 			currentPos++;
 		}
@@ -134,7 +134,7 @@ Class PyWheel_Tokenizer
 				break;
 			case 47: // '/'
 				tk.type = PTK_Slash;
-				while(!isNewline(lumpString.CharCodeAt(currentPos))&&currentPos<=lumpString.Length())
+				while(!isNewline(lumpString.CharCodeAt(currentPos)) && currentPos<=lumpString.Length())
 				{
 					tk.value.AppendFormat("%s", lumpString.CharAt(currentPos));
 					currentPos++;
@@ -152,7 +152,7 @@ Class PyWheel_Tokenizer
 			case 39: // '''
 				tk.type = PTK_String;
 				currentPos++;
-				while(/* !isWhitespace(lumpString.CharCodeAt(currentPos))&&*/lumpString.CharCodeAt(currentPos)!=34&&currentPos<=lumpString.Length())
+				while(/* !isWhitespace(lumpString.CharCodeAt(currentPos)) && */lumpString.CharCodeAt(currentPos)!=34 && currentPos<=lumpString.Length())
 				{
 					tk.value.AppendFormat("%s", lumpString.CharAt(currentPos));
 					currentPos++;
@@ -162,7 +162,7 @@ Class PyWheel_Tokenizer
 				if(IsLetter(lumpString.CharAt(currentPos)))
 				{
 					tk.type = PTK_Identifier;
-					while(!isWhitespace(lumpString.CharCodeAt(currentPos))&&lumpString.CharCodeAt(currentPos)!=44/*&&IsLetterOrDigit(lumpString.CharAt(currentPos))*/&&currentPos<=lumpString.Length())
+					while(!isWhitespace(lumpString.CharCodeAt(currentPos)) && lumpString.CharCodeAt(currentPos)!=44/* && IsLetterOrDigit(lumpString.CharAt(currentPos))*/ && currentPos<=lumpString.Length())
 					{
 						tk.value.AppendFormat("%s", lumpString.CharAt(currentPos));
 						currentPos++;
@@ -172,7 +172,7 @@ Class PyWheel_Tokenizer
 				else if(IsDigit(lumpString.CharAt(currentPos)))
 				{
 					tk.type = PTK_Number;
-					while(!isWhitespace(lumpString.CharCodeAt(currentPos))&&lumpString.CharCodeAt(currentPos)!=59/*&&IsDigit(lumpString.CharAt(currentPos))*/&&currentPos<=lumpString.Length())
+					while(!isWhitespace(lumpString.CharCodeAt(currentPos)) && lumpString.CharCodeAt(currentPos)!=59/* && IsDigit(lumpString.CharAt(currentPos))*/ && currentPos<=lumpString.Length())
 					{
 						tk.value.AppendFormat("%s", lumpString.CharAt(currentPos));
 						currentPos++;

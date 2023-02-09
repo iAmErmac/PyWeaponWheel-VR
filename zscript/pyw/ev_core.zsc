@@ -34,6 +34,7 @@ Class Py_WeaponWheelEventHandler : EventHandler
 	Array<int> projectileVelX, projectileVelY, projectileVelZ;
 	bool isLevelFrozen;
 	int wheelCloseCounter;
+	int thawDelay;
 	
 	enum E_WeaponSortMode
 	{
@@ -704,6 +705,18 @@ Class Py_WeaponWheelEventHandler : EventHandler
 				if(playerSlowMoInvulnerable) player.mo.bInvulnerable = false;
 				wheelCloseCounter = -1;
 			}
+			
+			//Thaw player back after a delay
+			if(thawDelay > 0)
+			{
+				FreezePlayer(player);
+				thawDelay--;
+			}
+			else if(thawDelay == 0)
+			{
+				ThawPlayer(player);
+				thawDelay = -1;
+			}
 		}
 	}
 	
@@ -763,7 +776,7 @@ Class Py_WeaponWheelEventHandler : EventHandler
 		bool useSlowMo = CVar.GetCVar("py_weaponwheel_slowmo", player).GetBool();
 		bool useSlowMoSound = CVar.GetCVar("py_weaponwheel_slow_sound", player).GetBool();
 		
-		wheelCloseCounter = 35; //This counter will make sure invulnerability is disabled when wheel is closed
+		wheelCloseCounter = 52; //This counter will make sure invulnerability is disabled when wheel is closed
 		isLevelFrozen = false;
 		
 		string btClassName = "BulletTime";
@@ -857,7 +870,7 @@ Class Py_WeaponWheelEventHandler : EventHandler
 			wheelSort = false;
 			wheelIsOpen = false;
 			if(isLevelFrozen) ThawActors();
-			ThawPlayer(players[e.Player]);
+			thawDelay = 17;
 		}
 	}
 	

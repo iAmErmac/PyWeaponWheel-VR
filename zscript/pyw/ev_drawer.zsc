@@ -7,7 +7,7 @@ Extend Class Py_WeaponWheelEventHandler
 		let circleTex = TexMan.CheckForTexture("graphics/pywheel/wheel_bg.png",TexMan.Type_MiscPatch);
 		let selTex = TexMan.CheckForTexture("graphics/pywheel/sel_bg.png",TexMan.Type_MiscPatch);
 		
-		if(!searchedWeps||wheelShow.Size()==0)
+		if(!searchedWeps || wheelShow.Size()==0)
 		{
 			return;
 		}
@@ -26,7 +26,6 @@ Extend Class Py_WeaponWheelEventHandler
 		for(int i = 0;i<wheelShow.Size();i++)
 		{
 			Vector2 textPos = (cos(((double(i+1)/wheelShow.Size())*360)+180)*128, sin((double(i+1)/wheelShow.Size())*360)*128);
-			//Console.Printf(""..);
 			TextureID wepIcon = wheelWeapons[wheelShow[i]].weaponIcon;
 			int screenPosX = int(circleX+textPos.x);//wheelScaleX[i];
 			int screenPosY = int(circleY+textPos.y);//wheelScaleY[i];
@@ -55,7 +54,7 @@ Extend Class Py_WeaponWheelEventHandler
 					DTA_DestWidth, int(imageScale.x), DTA_DestHeight, int(imageScale.y),
 					DTA_CenterOffset, true, DTA_TranslationIndex, icons_renderstyle==Style_Translucent ? Translation.GetID('lightenwep') : 0,
 					DTA_Alpha, 0.75*alphaFade, DTA_LegacyRenderStyle, icons_renderstyle);
-					screen.DrawText (SmallFont, Font.CR_WHITE, screenPosX-SmallFont.StringWidth(wepName)/2, screenPosY, wepName, DTA_VirtualWidth, 640, DTA_VirtualHeight, 480, DTA_Alpha, actuallyHas&&noIcon ? 1.0*alphaFade : 0.0);
+					screen.DrawText (SmallFont, Font.CR_WHITE, screenPosX-SmallFont.StringWidth(wepName)/2, screenPosY, wepName, DTA_VirtualWidth, 640, DTA_VirtualHeight, 480, DTA_Alpha, actuallyHas && noIcon ? 1.0*alphaFade : 0.0);
 				}
 			
 			//screen.DrawText (SmallFont, Font.CR_UNTRANSLATED, circleX+textPos.x-SmallFont.StringWidth(wepName)/2, circleY+textPos.y, wepName, DTA_VirtualWidth, 640, DTA_VirtualHeight, 480);
@@ -63,7 +62,6 @@ Extend Class Py_WeaponWheelEventHandler
 		}
 		circleX/=2;
 		circleY/=2;
-		//int curSelMod = wheelShow[currentSelection];
 		Font fnt = "SmallFont";
 		if( players[0].mo.FindInventory(wheelWeapons[curSelMod].weaponClass) )
 		{
