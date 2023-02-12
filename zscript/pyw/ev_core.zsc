@@ -31,7 +31,6 @@ Class Py_WeaponWheelEventHandler : EventHandler
 	
 	bool manyWeapon;
 	
-	Array<int> projectileVelX, projectileVelY, projectileVelZ;
 	bool isLevelFrozen;
 	int wheelCloseCounter;
 	int thawDelay;
@@ -682,6 +681,7 @@ Class Py_WeaponWheelEventHandler : EventHandler
 			
 			//Always freeze player when wheel is open
 			FreezePlayer(player);
+			if(isLevelFrozen) FreezeActors();
 		}
 		else
 		{
@@ -721,17 +721,18 @@ Class Py_WeaponWheelEventHandler : EventHandler
 	}
 	
 	//Freeze all monsters and projectiles
-	Void FreezeActors()
+	Void FreezeLevel()
 	{
 		PlayerInfo player = players[consolePlayer];
 		if(!player) return;
+		
+		isLevelFrozen = true;
 		
 		bool useSlowMo = CVar.GetCVar("py_weaponwheel_slowmo", player).GetBool();
 		bool useSlowMoSound = CVar.GetCVar("py_weaponwheel_slow_sound", player).GetBool();
 		
 		bool playerSlowMoInvulnerable = CVar.GetCVar("py_weaponwheel_invul", player).GetBool();
 		if(playerSlowMoInvulnerable) player.mo.bInvulnerable = true; //Make player invulnerable during freeze/slow-mo
-		isLevelFrozen = true;
 		
 		string btClassName = "BulletTime";
 		class<EventHandler> btLoaded = btClassName;
@@ -741,43 +742,56 @@ Class Py_WeaponWheelEventHandler : EventHandler
 			SendNetworkEvent("btRemoteActivate", useSlowMoSound, 20);
 			return;
 		}
+		
+		if(!player.mo.CountInv("wPowerTimeFreezeColor")) player.mo.GiveInventory("CustomTimeFreezerColor", 1);
+		if(useSlowMoSound) player.mo.A_StartSound("SLWSTART",  0, CHANF_LOCAL, 1.0, ATTN_NONE, 1.0);
+		FreezeActors();
+	}
 	
-		projectileVelX.Clear();
-		projectileVelY.Clear();
-		projectileVelZ.Clear();
-			
+	Void FreezeActors()
+	{
+		bool useSlowMo = CVar.GetCVar("py_weaponwheel_slowmo", players[consolePlayer]).GetBool();
 		ThinkerIterator It = ThinkerIterator.Create();
         Actor Mo;
         While (Mo = Actor(It.Next()))
         {
-            If (Mo && (Mo.bISMONSTER || Mo.bMISSILE) && mo.health > 0)
+            If (Mo && (Mo.bISMONSTER || Mo.bMISSILE) && Mo.health > 0)
             {
-                Mo.tics = -1;
-				Mo.gravity = 0;
-				
-				if(Mo.bMISSILE)
+				//if the actor is marked for frozen mmake sure to keep frozen
+				if(!Mo.CountInv("timeFreezeCustomMarker") && !Mo.CountInv("timeSlowCustomMarker"))
 				{
-					projectileVelX.Push(Mo.vel.x);
-					projectileVelY.Push(Mo.vel.y);
-					projectileVelZ.Push(Mo.vel.z);
+					if(useSlowMo)
+					{
+						Mo.GiveInventory("timeSlowCustomMarker", 1);
+						Vector3 mVel = Mo.vel;
+						Int mGravity = Mo.gravity;
+						let moInfo = timeSlowCustomMarker(Mo.FindInventory("timeSlowCustomMarker"));
+						moInfo.mVel = mVel;
+						moInfo.mGravity = mGravity;
+					}
+					else
+					{
+						Mo.GiveInventory("timeFreezeCustomMarker", 1);
+						Vector3 mVel = Mo.vel;
+						Int mGravity = Mo.gravity;
+						Let moInfo = timeFreezeCustomMarker(Mo.FindInventory("timeFreezeCustomMarker"));
+						moInfo.mVel = mVel;
+						moInfo.mGravity = mGravity;
+					}
 				}
-				
-				Mo.vel = (0, 0, 0);
             }
         }
 	}
 	
 	//Thaw all monsters and projectiles
-	Void ThawActors()
+	Void ThawLevel()
 	{
 		PlayerInfo player = players[consolePlayer];
 		if(!player) return;
 		
-		bool useSlowMo = CVar.GetCVar("py_weaponwheel_slowmo", player).GetBool();
 		bool useSlowMoSound = CVar.GetCVar("py_weaponwheel_slow_sound", player).GetBool();
 		
 		wheelCloseCounter = 52; //This counter will make sure invulnerability is disabled when wheel is closed
-		isLevelFrozen = false;
 		
 		string btClassName = "BulletTime";
 		class<EventHandler> btLoaded = btClassName;
@@ -787,30 +801,40 @@ Class Py_WeaponWheelEventHandler : EventHandler
 			SendNetworkEvent("btRemoteDeactivate", useSlowMoSound);
 		}
 		
+		player.mo.TakeInventory("wPowerTimeFreezeColor", 99);
+		ThawActors();
+		
+		if(useSlowMoSound) player.mo.A_StartSound("SLWSTOP",  0, CHANF_LOCAL, 1.0, ATTN_NONE, 1.0);
+		isLevelFrozen = false;
+	}
+	
+	Void ThawActors()
+	{
 		ThinkerIterator It = ThinkerIterator.Create();
         Actor Mo;
-		Int mCount = 0;
         While (Mo = Actor(It.Next()))
         {
-            If (Mo && (Mo.bISMONSTER || Mo.bMISSILE) && mo.health > 0)
-            {
-                Mo.tics = 1;
-				Mo.gravity = Mo.default.gravity;
-				if(!Mo.bMISSILE) Mo.vel = Mo.default.vel;
-				
-				if(Mo.bMISSILE && projectileVelX.size())
-				{
-					Mo.vel.x = projectileVelX[mCount];
-					Mo.vel.y = projectileVelY[mCount];
-					Mo.vel.z = projectileVelZ[mCount];
-					mCount++;
-				}
-            }
+            if(Mo.CountInv("timeFreezeCustomMarker") > 0)
+			{
+				let moInfo =  timeFreezeCustomMarker(Mo.FindInventory("timeFreezeCustomMarker"));
+				Vector3 mVel = moInfo.mVel;
+				Int mGravity = moInfo.mGravity;
+				moInfo.destroy();
+				Mo.tics = 1;
+				Mo.vel = mVel;
+				Mo.gravity = mGravity;
+			}
+            if(Mo.CountInv("timeSlowCustomMarker") > 0)
+			{
+				let moInfo =  timeSlowCustomMarker(Mo.FindInventory("timeSlowCustomMarker"));
+				Vector3 mVel = moInfo.mVel;
+				Int mGravity = moInfo.mGravity;
+				moInfo.destroy();
+				Mo.tics = 1;
+				Mo.vel = mVel;
+				Mo.gravity = mGravity;
+			}
         }
-		
-		projectileVelX.Clear();
-		projectileVelY.Clear();
-		projectileVelZ.Clear();
 	}
 	
 	//Freeze player in place
@@ -850,7 +874,7 @@ Class Py_WeaponWheelEventHandler : EventHandler
 			fakeMouse = realMouse;
 			if(CVar.GetCVar("py_weaponwheel_freeze", players[e.Player]).GetBool())
 			{
-				freezeActors();
+				FreezeLevel();
 			}
 		}
 		else if(e.name == 'pyweaponwheeloff')
@@ -869,7 +893,7 @@ Class Py_WeaponWheelEventHandler : EventHandler
 			}
 			wheelSort = false;
 			wheelIsOpen = false;
-			if(isLevelFrozen) ThawActors();
+			if(isLevelFrozen) ThawLevel();
 			thawDelay = 17;
 		}
 	}
@@ -889,5 +913,91 @@ Class Py_WeaponWheelEventHandler : EventHandler
 		}
 		
 		return false;
+	}
+}
+
+Class timeFreezeCustomMarker : Inventory
+{
+	Default
+	{
+		+INVENTORY.UNDROPPABLE;
+		+INVENTORY.UNTOSSABLE;
+		+INVENTORY.UNCLEARABLE;
+		+INVENTORY.PERSISTENTPOWER;
+		inventory.maxamount 1;
+	}
+	
+	Override Void DoEffect()
+	{
+		super.DoEffect();
+		if(!owner) destroy();
+		
+		owner.tics = -1;
+		owner.gravity = 0;
+		owner.vel = (0, 0, 0);
+	}
+	
+	Vector3 mVel;
+	Int mGravity;
+}
+
+Class timeSlowCustomMarker : timeFreezeCustomMarker
+{
+	Default
+	{
+		+INVENTORY.UNDROPPABLE;
+		+INVENTORY.UNTOSSABLE;
+		+INVENTORY.UNCLEARABLE;
+		+INVENTORY.PERSISTENTPOWER;
+		inventory.maxamount 1;
+	}
+	
+	Override Void DoEffect()
+	{
+		super.DoEffect();
+		if(!owner) destroy();
+		
+		if(slowDelay < 11)
+		{
+			owner.tics = -1;
+			owner.gravity = 0;
+			owner.vel = (0, 0, 0);
+			slowDelay++;
+		}
+		else if(slowDelay == 11)
+		{
+			owner.tics = 1;
+			owner.vel = mVel;
+			owner.gravity = mGravity;
+			slowDelay = 0;
+		}
+	}
+	
+	Int slowDelay;
+}
+
+Class CustomTimeFreezerColor : PowerupGiver
+{
+	Default
+	{
+		Inventory.MaxAmount 0;
+		Powerup.Type "wPowerTimeFreezeColor";
+		Powerup.Duration 0x7FFFFFFD;
+		+INVENTORY.AUTOACTIVATE;
+	}
+	States
+	{
+	Spawn:
+		MEGA ABCD 4 bright;
+		Loop;
+	}
+}
+
+Class wPowerTimeFreezeColor : Powerup
+{
+	Default
+	{
+		Powerup.Color "F5 FB FF", 0.15;
+		Powerup.Duration 0x7FFFFFFD;
 	}
 }

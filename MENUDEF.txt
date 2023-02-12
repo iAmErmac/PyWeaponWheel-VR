@@ -27,9 +27,9 @@ OptionMenu "PyWheelMenu"
 	PWWStaticText "Player will be invulnerable during Freeze"
 	PWWStaticText "This effect goes away in a sec after wheel is closed"
 	Option "Use slow-mo instead", "py_weaponwheel_slowmo", "OnOff", py_weaponwheel_freeze
+	PWWStaticText "Slow-mo mode will use Bullet-Time-X if loaded before this mod"
+	PWWStaticText "Without Bullet-Time-X powerups and environment will not slow down"
 	Option "Use slow-mo sound", "py_weaponwheel_slow_sound", "OnOff", py_weaponwheel_freeze
-	PWWStaticText "Slow-mo is available only when loaded with Bullet-Time-X"
-	PWWStaticText "This mod must be loaded after Bullet-Time-X to use Slow-mo"
 	StaticText ""
 	StaticText "Below options require map restart."
 	StaticText ""
