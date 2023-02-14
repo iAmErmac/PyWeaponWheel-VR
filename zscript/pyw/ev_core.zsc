@@ -751,6 +751,11 @@ Class Py_WeaponWheelEventHandler : EventHandler
 	Void FreezeActors()
 	{
 		bool useSlowMo = CVar.GetCVar("py_weaponwheel_slowmo", players[consolePlayer]).GetBool();
+		string btClassName = "BulletTime";
+		class<EventHandler> btLoaded = btClassName;
+		
+		if(btLoaded && useSlowMo) return;
+		
 		ThinkerIterator It = ThinkerIterator.Create();
         Actor Mo;
         While (Mo = Actor(It.Next()))
